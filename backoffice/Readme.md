@@ -173,176 +173,575 @@ DEBUG=backoffice:models:*
 - Server running on `http://localhost:4000`
 - Tools: curl, Postman, Thunder Client, or any HTTP client
 - Valid JWT token (obtained from login)
+- MySQL database with `users` table containing at least one user
 
-### 1. Login Endpoint
+---
+
+## Detailed Test Examples by Route Feature
+
+### 1. Login Endpoint - User Authentication
 
 **Endpoint:** `POST /login`
 
 **Description:** Authenticate user and receive JWT token
 
-**Request Body:**
-```json
-{
-  "username": "admin_user",
-  "password": "yourpassword"
-}
-```
+---
 
-**cURL Example:**
+#### Test 1.1: Successful Login
+
+**Purpose:** Verify user can login with correct credentials
+
+**Request:**
 ```bash
 curl -X POST http://localhost:4000/login ^
   -H "Content-Type: application/json" ^
-  -d "{\"username\":\"admin_user\",\"password\":\"yourpassword\"}"
+  -d "{\"username\":\"admin_user\",\"password\":\"correctPassword123\"}" ^
+  -i
 ```
 
-**Success Response (200):**
-```json
-true
-```
-**Headers:**
-- `x-auth-token`: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (JWT token)
+**Expected Response:**
+- Status: `200 OK`
+- Body: `true`
+- Headers: 
+  ```
+  x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbl91c2VyIiwiaXNBZG1pbiI6dHJ1ZSwiaWF0IjoxNzA3MzM5NjAwfQ.abc123...
+  access-control-expose-headers: x-auth-token
+  ```
 
-**Error Response (400):**
-```
-Invalid username or password
-```
-
-**Usage:**
-1. Copy the `x-auth-token` value from response headers
-2. Use this token in subsequent authenticated requests
+**What to verify:**
+- Response status is 200
+- Body contains `true`
+- `x-auth-token` header is present and contains a valid JWT
+- Token can be decoded to show user info
 
 ---
 
-### 2. Get Current User Information
+#### Test 1.2: Login with Incorrect Password
+
+**Purpose:** Verify system rejects invalid passwords
+
+**Request:**
+```bash
+curl -X POST http://localhost:4000/login ^
+  -H "Content-Type: application/json" ^
+  -d "{\"username\":\"admin_user\",\"password\":\"wrongPassword\"}" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `400 Bad Request`
+- Body: `Invalid username or password`
+- Headers: No `x-auth-token`
+
+**What to verify:**
+- Response status is 400
+- Error message doesn't reveal whether username or password was wrong (security)
+- No token is provided
+
+---
+
+#### Test 1.3: Login with Non-existent Username
+
+**Purpose:** Verify system handles non-existent users
+
+**Request:**
+```bash
+curl -X POST http://localhost:4000/login ^
+  -H "Content-Type: application/json" ^
+  -d "{\"username\":\"nonexistent_user\",\"password\":\"anyPassword\"}" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `400 Bad Request`
+- Body: `Invalid username or password`
+
+**What to verify:**
+- Same response as incorrect password (prevents username enumeration)
+- No information leak about user existence
+
+---
+
+#### Test 1.4: Login with Missing Username
+
+**Purpose:** Verify input validation
+
+**Request:**
+```bash
+curl -X POST http://localhost:4000/login ^
+  -H "Content-Type: application/json" ^
+  -d "{\"password\":\"somePassword\"}" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `400 Bad Request`
+- Body: `Invalid username or password`
+
+**What to verify:**
+- Request is rejected with proper error message
+- System doesn't crash or leak debug info
+
+---
+
+#### Test 1.5: Login with Missing Password
+
+**Purpose:** Verify input validation
+
+**Request:**
+```bash
+curl -X POST http://localhost:4000/login ^
+  -H "Content-Type: application/json" ^
+  -d "{\"username\":\"admin_user\"}" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `400 Bad Request`
+- Body: `Invalid username or password`
+
+---
+
+#### Test 1.6: Login with Empty Body
+
+**Purpose:** Verify request validation
+
+**Request:**
+```bash
+curl -X POST http://localhost:4000/login ^
+  -H "Content-Type: application/json" ^
+  -d "{}" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `400 Bad Request`
+- Body: `Invalid username or password`
+
+---
+
+### 2. Get Current User Info - Authenticated User Data
 
 **Endpoint:** `GET /users/me`
 
-**Description:** Get information about authenticated user
-
-**Authentication:** Required (JWT token in header)
-
-**Request Headers:**
-```
-x-auth-token: YOUR_JWT_TOKEN_HERE
-```
-
-**cURL Example:**
-```bash
-curl -X GET http://localhost:4000/users/me ^
-  -H "x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-```
-
-**Success Response (200):**
-```json
-[
-  {
-    "id": 1,
-    "username": "admin_user",
-    "email": "admin@example.com",
-    "isAdmin": 1
-  }
-]
-```
-
-**Error Response (401):**
-```
-Access denied. No token provided.
-```
-
-**Error Response (400):**
-```
-Invalid token.
-```
+**Description:** Retrieve authenticated user's information (requires valid JWT)
 
 ---
 
-### 3. Create New User
+#### Test 2.1: Get User Info with Valid Token
+
+**Purpose:** Verify authenticated user can retrieve their information
+
+**Setup:**
+```bash
+# First, login to get token
+set TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**Request:**
+```bash
+curl -X GET http://localhost:4000/users/me ^
+  -H "x-auth-token: %TOKEN%" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `200 OK`
+- Body: 
+  ```json
+  [
+    {
+      "id": 1,
+      "username": "admin_user",
+      "email": "admin@example.com",
+      "isAdmin": 1
+    }
+  ]
+  ```
+
+**What to verify:**
+- User info matches logged-in user
+- Password is NOT included in response
+- `isAdmin` field correctly reflects user role
+- Returns array with single user object
+
+---
+
+#### Test 2.2: Get User Info Without Token
+
+**Purpose:** Verify authentication is required
+
+**Request:**
+```bash
+curl -X GET http://localhost:4000/users/me ^
+  -i
+```
+
+**Expected Response:**
+- Status: `401 Unauthorized`
+- Body: `Access denied. No token provided.`
+
+**What to verify:**
+- Request is rejected without authentication
+- Proper HTTP status code (401)
+- Clear error message
+
+---
+
+#### Test 2.3: Get User Info with Invalid Token
+
+**Purpose:** Verify token validation
+
+**Request:**
+```bash
+curl -X GET http://localhost:4000/users/me ^
+  -H "x-auth-token: invalid.token.here" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `400 Bad Request`
+- Body: `Invalid token.`
+
+**What to verify:**
+- Malformed tokens are rejected
+- System doesn't crash on invalid JWT
+
+---
+
+#### Test 2.4: Get User Info with Expired Token
+
+**Purpose:** Verify token expiration handling
+
+**Request:**
+```bash
+curl -X GET http://localhost:4000/users/me ^
+  -H "x-auth-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.expired.token" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `400 Bad Request`
+- Body: `Invalid token.`
+
+**What to verify:**
+- Expired tokens are rejected
+- User must re-authenticate
+
+---
+
+### 3. Create New User - Admin User Registration
 
 **Endpoint:** `POST /users/new`
 
-**Description:** Register a new user (Admin only)
+**Description:** Register a new user (Admin privileges required)
 
-**Authentication:** Required (JWT token with admin privileges)
+---
 
-**Request Headers:**
-```
-x-auth-token: YOUR_ADMIN_JWT_TOKEN_HERE
-Content-Type: application/json
-```
+#### Test 3.1: Create User Successfully (Admin)
 
-**Request Body:**
-```json
-{
-  "username": "newuser",
-  "email": "newuser@example.com",
-  "password": "securePassword123",
-  "isAdmin": false
-}
+**Purpose:** Verify admin can create new users
+
+**Setup:**
+```bash
+# Login as admin and get token
+set ADMIN_TOKEN=admin_jwt_token_here
 ```
 
-**cURL Example:**
+**Request:**
 ```bash
 curl -X POST http://localhost:4000/users/new ^
   -H "Content-Type: application/json" ^
-  -H "x-auth-token: YOUR_ADMIN_TOKEN" ^
-  -d "{\"username\":\"newuser\",\"email\":\"newuser@example.com\",\"password\":\"securePassword123\",\"isAdmin\":false}"
+  -H "x-auth-token: %ADMIN_TOKEN%" ^
+  -d "{\"username\":\"newuser\",\"email\":\"newuser@example.com\",\"password\":\"SecurePass123\",\"isAdmin\":false}" ^
+  -i
 ```
 
-**Success Response (201):**
-```json
-{
-  "fieldCount": 0,
-  "affectedRows": 1,
-  "insertId": 5,
-  "info": "",
-  "serverStatus": 2,
-  "warningStatus": 0
-}
-```
-**Headers:**
-- `x-auth-token`: New JWT token for the created user
+**Expected Response:**
+- Status: `201 Created`
+- Body: 
+  ```json
+  {
+    "fieldCount": 0,
+    "affectedRows": 1,
+    "insertId": 5,
+    "info": "",
+    "serverStatus": 2,
+    "warningStatus": 0
+  }
+  ```
+- Headers: 
+  ```
+  x-auth-token: new_user_jwt_token
+  ```
 
-**Error Responses:**
+**What to verify:**
+- User is created in database
+- `insertId` shows the new user's ID
+- New JWT token is generated for the created user
+- `affectedRows` is 1
 
-**400 - Missing Required Fields:**
-```
-Username, email, and password are required
-```
+---
 
-**400 - Password Too Short:**
-```
-Password must be at least 6 characters long
-```
+#### Test 3.2: Create User Without Authentication
 
-**400 - Invalid Email Format:**
-```
-Invalid email format
-```
+**Purpose:** Verify endpoint requires authentication
 
-**400 - Duplicate Entry:**
-```
-Duplicate entry 'newuser' for key 'username'
-```
-or
-```
-Duplicate entry 'newuser@example.com' for key 'email'
+**Request:**
+```bash
+curl -X POST http://localhost:4000/users/new ^
+  -H "Content-Type: application/json" ^
+  -d "{\"username\":\"newuser\",\"email\":\"new@example.com\",\"password\":\"Pass123\"}" ^
+  -i
 ```
 
-**401 - Not Authenticated:**
-```
-Access denied. No token provided.
+**Expected Response:**
+- Status: `401 Unauthorized`
+- Body: `Access denied. No token provided.`
+
+**What to verify:**
+- Cannot create users without authentication
+- Proper 401 status code
+
+---
+
+#### Test 3.3: Create User as Non-Admin User
+
+**Purpose:** Verify only admins can create users
+
+**Setup:**
+```bash
+# Login as regular (non-admin) user
+set USER_TOKEN=regular_user_jwt_token
 ```
 
-**403 - Not Admin:**
+**Request:**
+```bash
+curl -X POST http://localhost:4000/users/new ^
+  -H "Content-Type: application/json" ^
+  -H "x-auth-token: %USER_TOKEN%" ^
+  -d "{\"username\":\"another\",\"email\":\"another@example.com\",\"password\":\"Pass123\"}" ^
+  -i
 ```
-Access denied. Admin privileges required.
+
+**Expected Response:**
+- Status: `403 Forbidden`
+- Body: `Access denied. Admin privileges required.`
+
+**What to verify:**
+- Regular users cannot create new users
+- Proper 403 status code for authorization failure
+
+---
+
+#### Test 3.4: Create User with Missing Username
+
+**Purpose:** Verify input validation - required fields
+
+**Request:**
+```bash
+curl -X POST http://localhost:4000/users/new ^
+  -H "Content-Type: application/json" ^
+  -H "x-auth-token: %ADMIN_TOKEN%" ^
+  -d "{\"email\":\"test@example.com\",\"password\":\"Pass123\"}" ^
+  -i
 ```
+
+**Expected Response:**
+- Status: `400 Bad Request`
+- Body: `Username, email, and password are required`
+
+**What to verify:**
+- Validation catches missing username
+- Clear error message about required fields
+
+---
+
+#### Test 3.5: Create User with Missing Email
+
+**Purpose:** Verify input validation - required fields
+
+**Request:**
+```bash
+curl -X POST http://localhost:4000/users/new ^
+  -H "Content-Type: application/json" ^
+  -H "x-auth-token: %ADMIN_TOKEN%" ^
+  -d "{\"username\":\"testuser\",\"password\":\"Pass123\"}" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `400 Bad Request`
+- Body: `Username, email, and password are required`
+
+---
+
+#### Test 3.6: Create User with Missing Password
+
+**Purpose:** Verify input validation - required fields
+
+**Request:**
+```bash
+curl -X POST http://localhost:4000/users/new ^
+  -H "Content-Type: application/json" ^
+  -H "x-auth-token: %ADMIN_TOKEN%" ^
+  -d "{\"username\":\"testuser\",\"email\":\"test@example.com\"}" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `400 Bad Request`
+- Body: `Username, email, and password are required`
+
+---
+
+#### Test 3.7: Create User with Short Password
+
+**Purpose:** Verify password length validation
+
+**Request:**
+```bash
+curl -X POST http://localhost:4000/users/new ^
+  -H "Content-Type: application/json" ^
+  -H "x-auth-token: %ADMIN_TOKEN%" ^
+  -d "{\"username\":\"testuser\",\"email\":\"test@example.com\",\"password\":\"12345\"}" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `400 Bad Request`
+- Body: `Password must be at least 6 characters long`
+
+**What to verify:**
+- Password must be at least 6 characters
+- Validation prevents weak passwords
+
+---
+
+#### Test 3.8: Create User with Invalid Email Format
+
+**Purpose:** Verify email format validation
+
+**Request:**
+```bash
+curl -X POST http://localhost:4000/users/new ^
+  -H "Content-Type: application/json" ^
+  -H "x-auth-token: %ADMIN_TOKEN%" ^
+  -d "{\"username\":\"testuser\",\"email\":\"invalid-email\",\"password\":\"Pass123456\"}" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `400 Bad Request`
+- Body: `Invalid email format`
+
+**What to verify:**
+- Email format is validated with regex
+- Common invalid formats are rejected (missing @, missing domain, etc.)
+
+---
+
+#### Test 3.9: Create User with Duplicate Username
+
+**Purpose:** Verify username uniqueness constraint
+
+**Request:**
+```bash
+# Try to create user with existing username
+curl -X POST http://localhost:4000/users/new ^
+  -H "Content-Type: application/json" ^
+  -H "x-auth-token: %ADMIN_TOKEN%" ^
+  -d "{\"username\":\"admin_user\",\"email\":\"different@example.com\",\"password\":\"Pass123456\"}" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `400 Bad Request`
+- Body: `Duplicate entry 'admin_user' for key 'username'`
+
+**What to verify:**
+- Database unique constraint is enforced
+- Duplicate usernames are rejected
+- Error message identifies the constraint violation
+
+---
+
+#### Test 3.10: Create User with Duplicate Email
+
+**Purpose:** Verify email uniqueness constraint
+
+**Request:**
+```bash
+# Try to create user with existing email
+curl -X POST http://localhost:4000/users/new ^
+  -H "Content-Type: application/json" ^
+  -H "x-auth-token: %ADMIN_TOKEN%" ^
+  -d "{\"username\":\"newusername\",\"email\":\"admin@example.com\",\"password\":\"Pass123456\"}" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `400 Bad Request`
+- Body: `Duplicate entry 'admin@example.com' for key 'email'`
+
+**What to verify:**
+- Email addresses must be unique
+- Database constraint prevents duplicates
+
+---
+
+#### Test 3.11: Create Admin User
+
+**Purpose:** Verify admin user creation
+
+**Request:**
+```bash
+curl -X POST http://localhost:4000/users/new ^
+  -H "Content-Type: application/json" ^
+  -H "x-auth-token: %ADMIN_TOKEN%" ^
+  -d "{\"username\":\"newadmin\",\"email\":\"newadmin@example.com\",\"password\":\"AdminPass123\",\"isAdmin\":true}" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `201 Created`
+- Body: Success with new user ID
+
+**What to verify:**
+- Admin flag is properly set
+- New admin user can perform admin operations
+- Database stores `isAdmin=1`
+
+---
+
+#### Test 3.12: Create User Without isAdmin Field (Default)
+
+**Purpose:** Verify default behavior for isAdmin field
+
+**Request:**
+```bash
+curl -X POST http://localhost:4000/users/new ^
+  -H "Content-Type: application/json" ^
+  -H "x-auth-token: %ADMIN_TOKEN%" ^
+  -d "{\"username\":\"defaultuser\",\"email\":\"default@example.com\",\"password\":\"Pass123456\"}" ^
+  -i
+```
+
+**Expected Response:**
+- Status: `201 Created`
+- User created with `isAdmin=false` (default)
+
+**What to verify:**
+- Missing `isAdmin` field defaults to `false`
+- User is created as regular (non-admin) user
 
 ---
 
 ## Integration Testing Workflow
 
-### Complete Test Scenario
+### Complete End-to-End Test Scenario
+
+This workflow demonstrates a complete user journey through the API:
 
 **Step 1: Start the server with debug enabled**
 ```bash
@@ -354,42 +753,85 @@ npm start
 DEBUG=backoffice:* npm start
 ```
 
-**Step 2: Login as admin**
+**Step 2: Test Authentication - Login as admin** (See Test 1.1)
 ```bash
 curl -X POST http://localhost:4000/login ^
   -H "Content-Type: application/json" ^
   -d "{\"username\":\"admin_user\",\"password\":\"admin_password\"}" ^
   -i
 ```
-Save the `x-auth-token` from response headers.
+✓ Save the `x-auth-token` from response headers  
+✓ Verify response status is 200  
+✓ Body should be `true`
 
-**Step 3: Verify your identity**
+**Step 3: Verify Authentication - Get your identity** (See Test 2.1)
 ```bash
 curl -X GET http://localhost:4000/users/me ^
   -H "x-auth-token: YOUR_TOKEN_HERE"
 ```
+✓ Verify you receive your user information  
+✓ Check that `isAdmin` is 1 or true
 
-**Step 4: Create a new user (admin only)**
+**Step 4: Test Authorization - Create a new user as admin** (See Test 3.1)
 ```bash
 curl -X POST http://localhost:4000/users/new ^
   -H "Content-Type: application/json" ^
   -H "x-auth-token: YOUR_ADMIN_TOKEN" ^
   -d "{\"username\":\"testuser\",\"email\":\"test@example.com\",\"password\":\"Test123456\",\"isAdmin\":false}"
 ```
+✓ Verify response status is 201  
+✓ Check `insertId` in response  
+✓ Save new user's token from headers
 
-**Step 5: Login with the new user**
+**Step 5: Test New User - Login with the newly created user** (See Test 1.1)
 ```bash
 curl -X POST http://localhost:4000/login ^
   -H "Content-Type: application/json" ^
   -d "{\"username\":\"testuser\",\"password\":\"Test123456\"}" ^
   -i
 ```
+✓ Verify new user can authenticate  
+✓ Save new user's token
 
-**Step 6: Get new user's information**
+**Step 6: Verify New User - Get new user's information** (See Test 2.1)
 ```bash
 curl -X GET http://localhost:4000/users/me ^
   -H "x-auth-token: NEW_USER_TOKEN"
 ```
+✓ Verify correct user info is returned  
+✓ Check that `isAdmin` is 0 or false
+
+**Step 7: Test Authorization - Try to create user as non-admin** (See Test 3.3)
+```bash
+curl -X POST http://localhost:4000/users/new ^
+  -H "Content-Type: application/json" ^
+  -H "x-auth-token: NEW_USER_TOKEN" ^
+  -d "{\"username\":\"unauthorized\",\"email\":\"unauth@example.com\",\"password\":\"Pass123\"}"
+```
+✓ Verify response status is 403  
+✓ Confirm error message about admin privileges
+
+**Step 8: Test Validation - Attempt invalid operations** (See Tests 3.4-3.12)
+```bash
+# Try short password
+curl -X POST http://localhost:4000/users/new ^
+  -H "Content-Type: application/json" ^
+  -H "x-auth-token: YOUR_ADMIN_TOKEN" ^
+  -d "{\"username\":\"test2\",\"email\":\"test2@example.com\",\"password\":\"123\"}"
+
+# Try invalid email
+curl -X POST http://localhost:4000/users/new ^
+  -H "Content-Type: application/json" ^
+  -H "x-auth-token: YOUR_ADMIN_TOKEN" ^
+  -d "{\"username\":\"test3\",\"email\":\"invalid-email\",\"password\":\"Pass123456\"}"
+
+# Try duplicate username
+curl -X POST http://localhost:4000/users/new ^
+  -H "Content-Type: application/json" ^
+  -H "x-auth-token: YOUR_ADMIN_TOKEN" ^
+  -d "{\"username\":\"testuser\",\"email\":\"another@example.com\",\"password\":\"Pass123456\"}"
+```
+✓ All should return 400 with appropriate error messages
 
 ### Testing with Postman
 
@@ -415,49 +857,108 @@ curl -X GET http://localhost:4000/users/me ^
      - Headers: `x-auth-token: {{authToken}}`
      - Body: raw JSON with user data
 
+5. **Use the Detailed Tests:** Replicate Tests 1.1-3.12 above in Postman for comprehensive testing
+
+---
+
+## Quick Test Reference
+
+### By Feature
+
+**Authentication Tests:**
+- Test 1.1-1.6: Login functionality with various scenarios
+
+**Authorization Tests:**
+- Test 2.1-2.4: User info retrieval with different auth states
+- Test 3.2-3.3: Admin-only operations
+
+**Validation Tests:**
+- Test 3.4-3.10: Input validation and constraints
+- Test 3.11-3.12: Optional fields and defaults
+
+### By HTTP Status Code
+
+**200 OK:**
+- Test 1.1: Successful login
+- Test 2.1: Get user info with valid token
+
+**201 Created:**
+- Test 3.1: Create user successfully
+- Test 3.11: Create admin user
+- Test 3.12: Create user with defaults
+
+**400 Bad Request:**
+- Test 1.2-1.6: Invalid login attempts
+- Test 2.3-2.4: Invalid/expired tokens
+- Test 3.4-3.10: Validation failures
+
+**401 Unauthorized:**
+- Test 2.2: Access without token
+- Test 3.2: Create user without authentication
+
+**403 Forbidden:**
+- Test 3.3: Non-admin trying to create user
+
+### By Test Type
+
+**Happy Path (Success):**
+- Tests 1.1, 2.1, 3.1, 3.11, 3.12
+
+**Security:**
+- Tests 1.2, 1.3, 2.2, 2.3, 2.4, 3.2, 3.3
+
+**Validation:**
+- Tests 1.4, 1.5, 1.6, 3.4, 3.5, 3.6, 3.7, 3.8
+
+**Constraints:**
+- Tests 3.9, 3.10
+
+---
+
 ### Common Testing Scenarios
 
-**Test Authentication:**
+All scenarios below reference the detailed tests above. Use this as a quick checklist:
+
+**Scenario: Test Authentication**
+- Run Tests 2.2 (no token), 2.3 (invalid token), 2.4 (expired token)
+- ✓ All should be rejected with appropriate errors
+
+**Scenario: Test Non-Admin User Creating User**
+- Login as regular user
+- Run Test 3.3
+- ✓ Should return 403 Forbidden
+
+**Scenario: Test All Validation Rules**
+- Run Tests 3.4-3.8 in sequence
+- ✓ Each should fail with specific validation message
+
+**Scenario: Test Database Constraints**
+- Run Tests 3.9-3.10
+- ✓ Should prevent duplicates
+
+**Scenario: Test Password Security**
+- Verify passwords are hashed (check database)
+- Run Test 1.2 with wrong password
+- Run Test 3.7 with short password
+- ✓ Passwords not visible in responses or logs
+
+**Scenario: Test Token Lifecycle**
+1. Run Test 1.1 - Get fresh token
+2. Run Test 2.1 - Use token successfully
+3. Wait for expiration (if configured)
+4. Run Test 2.4 - Token should be rejected
+5. Run Test 1.1 again - Get new token
+
+**Full Regression Test Suite:**
+Execute all tests in order (1.1 through 3.12) to verify all functionality:
 ```bash
-# Should return 401
-curl -X GET http://localhost:4000/users/me
-```
-
-**Test Invalid Token:**
-```bash
-# Should return 400
-curl -X GET http://localhost:4000/users/me ^
-  -H "x-auth-token: invalid_token"
-```
-
-**Test Non-Admin User Creating User:**
-```bash
-# Login as regular user, then try to create user
-# Should return 403
-```
-
-**Test Validation:**
-```bash
-# Missing fields
-curl -X POST http://localhost:4000/users/new ^
-  -H "Content-Type: application/json" ^
-  -H "x-auth-token: YOUR_ADMIN_TOKEN" ^
-  -d "{\"username\":\"testuser\"}"
-# Should return 400: Username, email, and password are required
-
-# Short password
-curl -X POST http://localhost:4000/users/new ^
-  -H "Content-Type: application/json" ^
-  -H "x-auth-token: YOUR_ADMIN_TOKEN" ^
-  -d "{\"username\":\"testuser\",\"email\":\"test@example.com\",\"password\":\"123\"}"
-# Should return 400: Password must be at least 6 characters long
-
-# Invalid email
-curl -X POST http://localhost:4000/users/new ^
-  -H "Content-Type: application/json" ^
-  -H "x-auth-token: YOUR_ADMIN_TOKEN" ^
-  -d "{\"username\":\"testuser\",\"email\":\"invalid-email\",\"password\":\"Test123456\"}"
-# Should return 400: Invalid email format
+# Run comprehensive test
+# Takes ~2-3 minutes
+# Should have: 
+#   - 6 passing authentication tests
+#   - 4 passing authorization tests  
+#   - 12 passing user creation tests
+#   - Total: 22 tests
 ```
 
 ## License
