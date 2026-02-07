@@ -65,6 +65,17 @@ npm run dev
 
 The server will start on `http://localhost:4000`
 
+## 📚 Documentation Index
+
+This repository contains multiple documentation files for different purposes:
+
+- **[Readme.md](Readme.md)** (this file) - Main project documentation with API testing guide
+- **[Postman Collection Guide](postman/POSTMAN-GUIDE.md)** - Complete guide for Postman collection setup and usage
+- **[Postman Collection](postman/Backoffice-API-Tests.postman_collection.json)** - Ready-to-import collection with 22 tests
+- **[Postman Environment](postman/Backoffice-API.postman_environment.json)** - Environment variables configuration
+
+---
+
 ## Quick Start: Testing with Postman
 
 **🎯 Want to test the API immediately?**
@@ -72,7 +83,7 @@ The server will start on `http://localhost:4000`
 Import the ready-to-use Postman collection from the `postman/` directory:
 - Complete test suite with all 22 automated tests
 - Environment variables pre-configured
-- See [postman/README.md](postman/README.md) for setup instructions
+- See [Postman Collection Guide](postman/POSTMAN-GUIDE.md) for detailed setup instructions
 
 ---
 
@@ -876,9 +887,9 @@ A complete Postman collection with all 22 test cases is included in the `postman
 - ✅ Automatic token management
 - ✅ Dynamic test data generation
 - ✅ Pre-request and test scripts
-- ✅ Complete documentation in `postman/README.md`
+- ✅ Complete documentation in [Postman Guide](postman/POSTMAN-GUIDE.md)
 
-**See `postman/README.md` for detailed instructions.**
+**See [Postman Collection Guide](postman/POSTMAN-GUIDE.md) for detailed instructions.**
 
 ---
 
