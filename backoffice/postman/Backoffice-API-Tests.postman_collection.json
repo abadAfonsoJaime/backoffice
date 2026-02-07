@@ -1,0 +1,1189 @@
+{
+	"info": {
+		"_postman_id": "backoffice-api-collection-2026",
+		"name": "Backoffice API - Complete Test Suite",
+		"description": "Comprehensive test collection for Backoffice API with 22 test cases covering authentication, authorization, validation, and constraints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Login Tests",
+			"item": [
+				{
+					"name": "Test 1.1: Successful Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response body is true\", function () {",
+									"    pm.expect(pm.response.text()).to.equal(\"true\");",
+									"});",
+									"",
+									"pm.test(\"x-auth-token header is present\", function () {",
+									"    pm.response.to.have.header(\"x-auth-token\");",
+									"});",
+									"",
+									"// Save token for subsequent requests",
+									"const token = pm.response.headers.get(\"x-auth-token\");",
+									"if (token) {",
+									"    pm.environment.set(\"authToken\", token);",
+									"    console.log(\"Token saved:\", token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{validUsername}}\",\n    \"password\": \"{{validPassword}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "Verify user can login with correct credentials"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 1.2: Login with Incorrect Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message is correct\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Invalid username or password\");",
+									"});",
+									"",
+									"pm.test(\"No token in response\", function () {",
+									"    pm.expect(pm.response.headers.has(\"x-auth-token\")).to.be.false;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{validUsername}}\",\n    \"password\": \"wrongPassword\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "Verify system rejects invalid passwords"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 1.3: Login with Non-existent Username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message doesn't reveal user existence\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Invalid username or password\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"nonexistent_user_12345\",\n    \"password\": \"anyPassword\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "Verify system handles non-existent users without information leak"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 1.4: Login with Missing Username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Request is rejected\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Invalid username or password\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"password\": \"somePassword\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "Verify input validation for missing username"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 1.5: Login with Missing Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Request is rejected\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Invalid username or password\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{validUsername}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "Verify input validation for missing password"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 1.6: Login with Empty Body",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Request is rejected\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Invalid username or password\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						},
+						"description": "Verify request validation with empty body"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication tests for login endpoint"
+		},
+		{
+			"name": "2. Get User Info Tests",
+			"item": [
+				{
+					"name": "Test 2.1: Get User Info with Valid Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is an array\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"User info contains required fields\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0]).to.have.property('id');",
+									"    pm.expect(jsonData[0]).to.have.property('username');",
+									"    pm.expect(jsonData[0]).to.have.property('email');",
+									"    pm.expect(jsonData[0]).to.have.property('isAdmin');",
+									"});",
+									"",
+									"pm.test(\"Password is not included in response\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData[0]).to.not.have.property('password');",
+									"});",
+									"",
+									"// Save user ID for future use",
+									"const jsonData = pm.response.json();",
+									"if (jsonData[0] && jsonData[0].id) {",
+									"    pm.environment.set(\"userId\", jsonData[0].id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Ensure we have a token from Test 1.1",
+									"if (!pm.environment.get(\"authToken\")) {",
+									"    console.warn(\"No authToken found. Run Test 1.1 first.\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						},
+						"description": "Verify authenticated user can retrieve their information"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 2.2: Get User Info Without Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Error message is correct\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Access denied\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						},
+						"description": "Verify authentication is required"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 2.3: Get User Info with Invalid Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message indicates invalid token\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Invalid token\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "invalid.token.here",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						},
+						"description": "Verify token validation"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 2.4: Get User Info with Expired Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message indicates invalid token\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Invalid token\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{expiredToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						},
+						"description": "Verify token expiration handling"
+					},
+					"response": []
+				}
+			],
+			"description": "Tests for retrieving authenticated user information"
+		},
+		{
+			"name": "3. Create User Tests (Admin)",
+			"item": [
+				{
+					"name": "Test 3.1: Create User Successfully (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response contains insertId\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('insertId');",
+									"    pm.expect(jsonData.insertId).to.be.a('number');",
+									"});",
+									"",
+									"pm.test(\"affectedRows is 1\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.affectedRows).to.equal(1);",
+									"});",
+									"",
+									"pm.test(\"New user token is provided\", function () {",
+									"    pm.response.to.have.header(\"x-auth-token\");",
+									"});",
+									"",
+									"// Save new user token",
+									"const newToken = pm.response.headers.get(\"x-auth-token\");",
+									"if (newToken) {",
+									"    pm.environment.set(\"newUserToken\", newToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate unique username for this test",
+									"const timestamp = Date.now();",
+									"pm.environment.set(\"testUsername\", \"testuser\" + timestamp);",
+									"pm.environment.set(\"testEmail\", \"test\" + timestamp + \"@example.com\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{testUsername}}\",\n    \"email\": \"{{testEmail}}\",\n    \"password\": \"SecurePass123\",\n    \"isAdmin\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/new",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"new"
+							]
+						},
+						"description": "Verify admin can create new users"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 3.2: Create User Without Authentication",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Error message is correct\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Access denied\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"unauthorizeduser\",\n    \"email\": \"unauth@example.com\",\n    \"password\": \"Pass123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/new",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"new"
+							]
+						},
+						"description": "Verify endpoint requires authentication"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 3.3: Create User as Non-Admin User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"pm.test(\"Error message about admin privileges\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Admin\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{newUserToken}}",
+								"type": "text",
+								"description": "Use non-admin user token from Test 3.1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"anotheruser\",\n    \"email\": \"another@example.com\",\n    \"password\": \"Pass123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/new",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"new"
+							]
+						},
+						"description": "Verify only admins can create users"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 3.4: Create User with Missing Username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message about required fields\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"required\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"Pass123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/new",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"new"
+							]
+						},
+						"description": "Verify validation catches missing username"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 3.5: Create User with Missing Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message about required fields\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"required\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"password\": \"Pass123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/new",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"new"
+							]
+						},
+						"description": "Verify validation catches missing email"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 3.6: Create User with Missing Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message about required fields\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"required\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/new",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"new"
+							]
+						},
+						"description": "Verify validation catches missing password"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 3.7: Create User with Short Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message about password length\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"6 characters\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"password\": \"12345\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/new",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"new"
+							]
+						},
+						"description": "Verify password length validation"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 3.8: Create User with Invalid Email Format",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message about email format\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"email\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"invalid-email\",\n    \"password\": \"Pass123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/new",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"new"
+							]
+						},
+						"description": "Verify email format validation"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 3.9: Create User with Duplicate Username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message about duplicate entry\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Duplicate\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{validUsername}}\",\n    \"email\": \"unique@example.com\",\n    \"password\": \"Pass123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/new",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"new"
+							]
+						},
+						"description": "Verify username uniqueness constraint"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 3.10: Create User with Duplicate Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message about duplicate entry\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Duplicate\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate unique username",
+									"const timestamp = Date.now();",
+									"pm.environment.set(\"uniqueUsername\", \"user\" + timestamp);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{uniqueUsername}}\",\n    \"email\": \"{{validEmail}}\",\n    \"password\": \"Pass123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/new",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"new"
+							]
+						},
+						"description": "Verify email uniqueness constraint"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 3.11: Create Admin User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"User created successfully\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.affectedRows).to.equal(1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate unique admin username",
+									"const timestamp = Date.now();",
+									"pm.environment.set(\"adminUsername\", \"admin\" + timestamp);",
+									"pm.environment.set(\"adminEmail\", \"admin\" + timestamp + \"@example.com\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{adminUsername}}\",\n    \"email\": \"{{adminEmail}}\",\n    \"password\": \"AdminPass123\",\n    \"isAdmin\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/new",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"new"
+							]
+						},
+						"description": "Verify admin user creation"
+					},
+					"response": []
+				},
+				{
+					"name": "Test 3.12: Create User Without isAdmin (Default)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"User created with default isAdmin value\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.affectedRows).to.equal(1);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate unique username",
+									"const timestamp = Date.now();",
+									"pm.environment.set(\"defaultUsername\", \"default\" + timestamp);",
+									"pm.environment.set(\"defaultEmail\", \"default\" + timestamp + \"@example.com\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{defaultUsername}}\",\n    \"email\": \"{{defaultEmail}}\",\n    \"password\": \"Pass123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/new",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"new"
+							]
+						},
+						"description": "Verify default behavior for isAdmin field"
+					},
+					"response": []
+				}
+			],
+			"description": "Tests for creating new users (Admin only endpoint)"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script",
+					"console.log('='.repeat(50));",
+					"console.log('Request:', pm.info.requestName);",
+					"console.log('Environment:', pm.environment.name);",
+					"console.log('='.repeat(50));"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script",
+					"console.log('Response Status:', pm.response.code, pm.response.status);",
+					"console.log('Response Time:', pm.response.responseTime, 'ms');"
+				]
+			}
+		}
+	]
+}

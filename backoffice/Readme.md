@@ -65,6 +65,17 @@ npm run dev
 
 The server will start on `http://localhost:4000`
 
+## Quick Start: Testing with Postman
+
+**🎯 Want to test the API immediately?**
+
+Import the ready-to-use Postman collection from the `postman/` directory:
+- Complete test suite with all 22 automated tests
+- Environment variables pre-configured
+- See [postman/README.md](postman/README.md) for setup instructions
+
+---
+
 ## API Endpoints
 
 ### Authentication
@@ -835,29 +846,39 @@ curl -X POST http://localhost:4000/users/new ^
 
 ### Testing with Postman
 
-1. **Import Collection:** Create a new collection called "Backoffice API"
+**🚀 Ready-to-Use Postman Collection Available!**
 
-2. **Set Base URL:** Create an environment variable:
-   - Variable: `baseUrl`
-   - Value: `http://localhost:4000`
+A complete Postman collection with all 22 test cases is included in the `postman/` directory.
 
-3. **Set Token Variable:** After login, save token:
-   - Variable: `authToken`
-   - Value: Copy from response header `x-auth-token`
+**Quick Start:**
 
-4. **Configure Requests:**
-   - **POST Login:** `{{baseUrl}}/login`
-     - Body: raw JSON with username/password
-     - Tests: Save token with `pm.environment.set("authToken", pm.response.headers.get("x-auth-token"))`
-   
-   - **GET Me:** `{{baseUrl}}/users/me`
-     - Headers: `x-auth-token: {{authToken}}`
-   
-   - **POST New User:** `{{baseUrl}}/users/new`
-     - Headers: `x-auth-token: {{authToken}}`
-     - Body: raw JSON with user data
+1. **Import Files:**
+   - Open Postman
+   - Import `postman/Backoffice-API-Tests.postman_collection.json`
+   - Import `postman/Backoffice-API.postman_environment.json`
 
-5. **Use the Detailed Tests:** Replicate Tests 1.1-3.12 above in Postman for comprehensive testing
+2. **Configure Environment:**
+   - Select "Backoffice API - Local Development" environment
+   - Update these variables:
+     - `validUsername` - Your admin username
+     - `validPassword` - Your admin password
+     - `validEmail` - Your admin email
+     - `jwtPrivateKey` - Your JWT secret key
+
+3. **Run Tests:**
+   - Click **Run** on the collection
+   - Select the environment
+   - Execute all 22 tests automatically
+
+**What's Included:**
+- ✅ All 22 test cases with automated assertions
+- ✅ Environment variables aligned with Node.js config
+- ✅ Automatic token management
+- ✅ Dynamic test data generation
+- ✅ Pre-request and test scripts
+- ✅ Complete documentation in `postman/README.md`
+
+**See `postman/README.md` for detailed instructions.**
 
 ---
 
