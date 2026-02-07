@@ -8,7 +8,7 @@ const {
   registerUser,
   getUserById
 } = require("../models/userModel");
-//const debug = require("debug")("purisima:api");
+const debug = require("debug")("backoffice:routes:users");
 
 router.get("/me", auth, async (req, res) => {
   // The user information is not in the query parameters for security reasons

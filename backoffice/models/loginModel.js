@@ -1,5 +1,5 @@
 const dbConn = require("../startup/db");
-const debug = require("debug")("purisima:db");
+const debug = require("debug")("backoffice:models:login");
 
 function checkUsername(sql_query, queryParam) {
   return new Promise((resolve, reject) => {

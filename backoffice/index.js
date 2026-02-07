@@ -1,4 +1,4 @@
-const debug = require('debug')('purisima:startup');
+const debug = require('debug')('backoffice:startup');
 const config = require('config');
 const express = require('express');
 const db = require('./startup/db');

@@ -1,7 +1,7 @@
 const mysql = require('mysql2');
 const config = require('config');
 const dbData = config.get('dbConfig');
-const debug = require('debug')('purisima:db');
+const debug = require('debug')('backoffice:db');
 
 const connection = mysql.createConnection({
     host: dbData.host,

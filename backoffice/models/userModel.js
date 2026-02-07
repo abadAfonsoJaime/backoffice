@@ -1,6 +1,6 @@
 const Joi = require("joi");
 const dbConn = require("../startup/db");
-const debug = require("debug")("purisima:db");
+const debug = require("debug")("backoffice:models:user");
 
 
 function registerUser(sql_query, queryParams) {
