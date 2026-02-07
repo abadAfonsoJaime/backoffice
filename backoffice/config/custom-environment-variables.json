@@ -1,0 +1,8 @@
+{
+    "db": {
+        "host": "purisima_host",
+        "user": "purisima_user",
+        "password": "purisima_password"
+    },
+    "jwtPrivateKey": "purisimaJwtPrivateKey"
+}
