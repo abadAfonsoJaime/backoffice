@@ -1,10 +1,10 @@
 {
   "dbConfig": {
     "host": "localhost",
-    "user": "srv_backoffice",
+    "user": "your_database_user",
     "port": 3306,
-    "password": "6/|e`elL;@Z*RHmY",
-    "database": "marketing_posts"
+    "password": "your_database_password",
+    "database": "your_database_name"
   },
-  "jwtPrivateKey": "purisimaJwtPrivateKey"
+  "jwtPrivateKey": "your_jwt_private_key_here"
 }

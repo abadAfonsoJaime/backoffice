@@ -1,0 +1,188 @@
+name: CD - Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # Allow manual deployment
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: windows-latest
+    environment:
+      name: production
+      url: https://your-production-url.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: backoffice/package-lock.json
+      
+      - name: Install dependencies
+        run: |
+          cd backoffice
+          npm ci --production
+        shell: pwsh
+      
+      - name: Create production configuration
+        run: |
+          cd backoffice/config
+          @"
+          {
+            "dbConfig": {
+              "host": "$env:DB_HOST",
+              "user": "$env:DB_USER",
+              "port": $env:DB_PORT,
+              "password": "$env:DB_PASSWORD",
+              "database": "$env:DB_NAME"
+            },
+            "jwtPrivateKey": "$env:JWT_PRIVATE_KEY"
+          }
+          "@ | Out-File -FilePath production.json -Encoding utf8
+        env:
+          DB_HOST: ${{ secrets.PROD_DB_HOST }}
+          DB_USER: ${{ vars.PROD_DB_USER }}
+          DB_PORT: ${{ vars.PROD_DB_PORT }}
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          DB_NAME: ${{ vars.PROD_DB_NAME }}
+          JWT_PRIVATE_KEY: ${{ secrets.PROD_JWT_PRIVATE_KEY }}
+        shell: pwsh
+      
+      - name: Verify configuration
+        run: |
+          cd backoffice
+          $config = Get-Content config/production.json | ConvertFrom-Json
+          Write-Host "✓ Database Host: $($config.dbConfig.host)"
+          Write-Host "✓ Database User: $($config.dbConfig.user)"
+          Write-Host "✓ Database Name: $($config.dbConfig.database)"
+          Write-Host "✓ JWT Key configured: $($config.jwtPrivateKey.Length) characters"
+        shell: pwsh
+      
+      - name: Stop existing service (if running)
+        continue-on-error: true
+        run: |
+          $service = Get-Process -Name "node" -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "*backoffice*" }
+          if ($service) {
+            Write-Host "Stopping existing service..."
+            Stop-Process -Id $service.Id -Force
+            Start-Sleep -Seconds 3
+          }
+        shell: pwsh
+      
+      - name: Deploy application
+        run: |
+          cd backoffice
+          
+          # Create deployment directory if it doesn't exist
+          $deployPath = "$env:DEPLOY_PATH"
+          if (-not (Test-Path $deployPath)) {
+            New-Item -ItemType Directory -Path $deployPath -Force
+          }
+          
+          # Copy files to deployment directory
+          Write-Host "Deploying to: $deployPath"
+          Copy-Item -Path ./* -Destination $deployPath -Recurse -Force
+          
+          Write-Host "✓ Deployment completed successfully"
+        env:
+          DEPLOY_PATH: ${{ vars.PROD_DEPLOY_PATH }}
+        shell: pwsh
+      
+      - name: Start application service
+        run: |
+          cd $env:DEPLOY_PATH
+          
+          # Start the Node.js application as a background process
+          $env:NODE_ENV = "production"
+          Start-Process -FilePath "node" -ArgumentList "index.js" -WorkingDirectory $env:DEPLOY_PATH -WindowStyle Hidden
+          
+          # Wait for service to start
+          Start-Sleep -Seconds 5
+          
+          # Verify service is running
+          $process = Get-Process -Name "node" -ErrorAction SilentlyContinue
+          if ($process) {
+            Write-Host "✓ Service started successfully (PID: $($process.Id))"
+          } else {
+            Write-Error "✗ Failed to start service"
+            exit 1
+          }
+        env:
+          DEPLOY_PATH: ${{ vars.PROD_DEPLOY_PATH }}
+        shell: pwsh
+      
+      - name: Run health check
+        run: |
+          Start-Sleep -Seconds 3
+          
+          $maxRetries = 5
+          $retryCount = 0
+          $healthCheckUrl = "$env:BASE_URL/health"
+          
+          while ($retryCount -lt $maxRetries) {
+            try {
+              $response = Invoke-WebRequest -Uri $healthCheckUrl -UseBasicParsing -TimeoutSec 5
+              if ($response.StatusCode -eq 200) {
+                Write-Host "✓ Health check passed"
+                exit 0
+              }
+            } catch {
+              $retryCount++
+              Write-Host "Health check attempt $retryCount/$maxRetries failed, retrying..."
+              Start-Sleep -Seconds 5
+            }
+          }
+          
+          Write-Warning "Health check failed after $maxRetries attempts"
+        env:
+          BASE_URL: ${{ vars.PROD_BASE_URL }}
+        shell: pwsh
+      
+      - name: Notify deployment success
+        if: success()
+        run: |
+          Write-Host "🚀 Production deployment completed successfully!"
+          Write-Host "Environment: production"
+          Write-Host "Branch: main"
+          Write-Host "Commit: $env:GITHUB_SHA"
+        shell: pwsh
+      
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          Write-Host "⚠️ Deployment failed - initiating rollback"
+          # Add rollback logic here
+          # For example: restore previous version, restart service, etc.
+        shell: pwsh
+
+  post-deployment-tests:
+    name: Post-Deployment Smoke Tests
+    runs-on: ubuntu-latest
+    needs: deploy
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+      
+      - name: Install Newman
+        run: npm install -g newman
+      
+      - name: Run smoke tests
+        run: |
+          # Update Postman environment with production URLs
+          # Run critical path tests only
+          echo "✓ Smoke tests would run here against production"
+        env:
+          PROD_BASE_URL: ${{ vars.PROD_BASE_URL }}

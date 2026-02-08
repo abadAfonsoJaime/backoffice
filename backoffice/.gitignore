@@ -9,6 +9,10 @@ node_modules/
 # Config files with sensitive data
 config/local.json
 config/local-*.json
+config/production.json
+config/staging.json
+config/development.json
+config/test.json
 
 # Logs
 logs/

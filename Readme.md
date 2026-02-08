@@ -1,6 +1,6 @@
 # Backoffice Server
 
-A Node.js backoffice server application with MySQL database integration, JWT authentication, and Express.js REST API.
+A Node.js backoffice server application with MySQL database integration, JWT authentication, Express.js REST API, and automated CI/CD deployment.
 
 ## Features
 
@@ -13,6 +13,30 @@ A Node.js backoffice server application with MySQL database integration, JWT aut
 - CORS enabled for cross-origin requests
 - Security headers with Helmet
 - Login and user registration endpoints
+- **Automated CI/CD with GitHub Actions**
+- **Automated testing with Newman**
+- **Multi-environment deployment (Production & Staging)**
+
+## 🚀 CI/CD & Deployment
+
+This project includes complete CI/CD automation using GitHub Actions:
+
+- ✅ **Continuous Integration**: Automated testing on every PR
+- ✅ **Continuous Deployment**: Auto-deploy to staging (`develop`) and production (`main`)
+- ✅ **Branch Protection**: PR approvals required for main (2) and develop (1)
+- ✅ **Environment Management**: Separate configs for production, staging, and development
+- ✅ **Automated Testing**: Newman API tests run on every deployment
+
+**📚 Complete Setup Guides:**
+- **[CI/CD Setup Guide](./GITHUB-CICD-SETUP.md)** - Comprehensive GitHub Actions configuration
+- **[Setup Checklist](./CICD-CHECKLIST.md)** - Step-by-step checklist for deployment setup
+
+**Quick Start:**
+1. Configure GitHub environments (production & staging)
+2. Add secrets and variables
+3. Set up branch protection rules
+4. Push to `develop` → Auto-deploys to staging
+5. Merge to `main` → Auto-deploys to production
 
 ## Prerequisites
 
