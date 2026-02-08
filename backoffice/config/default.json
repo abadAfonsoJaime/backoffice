@@ -5,5 +5,6 @@
     "port": 3306,
     "password": "6/|e`elL;@Z*RHmY",
     "database": "marketing_posts"
-  }
+  },
+  "jwtPrivateKey": "purisimaJwtPrivateKey"
 }
