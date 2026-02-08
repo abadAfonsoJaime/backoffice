@@ -27,9 +27,9 @@ This guide walks you through setting up Continuous Integration and Continuous De
 │   develop   │─────────────→│     main    │
 │  (Staging)  │   (Review)   │ (Production)│
 └──────┬──────┘              └──────┬──────┘
-       │                             │
-       │ Auto Deploy                 │ Auto Deploy
-       ▼                             ▼
+       │                            │
+       │ Auto Deploy                │ Auto Deploy
+       ▼                            ▼
 ┌──────────────┐            ┌──────────────┐
 │   Staging    │            │  Production  │
 │ Environment  │            │ Environment  │
