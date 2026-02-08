@@ -47,6 +47,11 @@ jobs:
       - name: Install dependencies
         run: |
           cd backoffice
+          # Ensure package-lock.json exists and is in sync
+          if [ ! -f package-lock.json ]; then
+            echo "⚠️ package-lock.json not found, generating..."
+            npm install --package-lock-only
+          fi
           npm ci
       
       - name: Initialize database
@@ -115,6 +120,9 @@ jobs:
       - name: Install dependencies
         run: |
           cd backoffice
+          if [ ! -f package-lock.json ]; then
+            npm install --package-lock-only
+          fi
           npm ci
       
       - name: Run security audit
@@ -146,6 +154,9 @@ jobs:
       - name: Install dependencies
         run: |
           cd backoffice
+          if [ ! -f package-lock.json ]; then
+            npm install --package-lock-only
+          fi
           npm ci
       
       - name: Verify package structure
