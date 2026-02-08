@@ -72,3 +72,6 @@ Thumbs.db
 # Build output
 dist/
 build/
+# Testing and integration tools
+integration-tools/
+newman-report.html
