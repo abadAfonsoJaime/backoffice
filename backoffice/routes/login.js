@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
-//const { validateLoginInput, checkUsername } = require("../models/loginModel");
-const checkUsername = require("../models/loginModel");
+const { validateLoginInput, checkUsername } = require("../models/loginModel");
 
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../models/jwtToken");

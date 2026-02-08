@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "seed": "node seed-admin.js",
+    "test": "newman run integration-tools/Backoffice-API-Tests.postman_collection.json -e integration-tools/Backoffice-API.postman_environment.json",
+    "test:verbose": "newman run integration-tools/Backoffice-API-Tests.postman_collection.json -e integration-tools/Backoffice-API.postman_environment.json --verbose",
+    "test:report": "newman run integration-tools/Backoffice-API-Tests.postman_collection.json -e integration-tools/Backoffice-API.postman_environment.json --reporters cli,html --reporter-html-export newman-report.html"
   },
   "keywords": [
     "backoffice",
@@ -26,6 +29,7 @@
     "mysql2": "^3.11.5"
   },
   "devDependencies": {
+    "newman": "^6.2.1",
     "nodemon": "^3.0.2"
   }
 }

@@ -242,15 +242,421 @@ After running tests:
 
 ## CI/CD Integration
 
-To run this collection in CI/CD using Newman:
+### Running Tests with Newman
 
+[Newman](https://learning.postman.com/docs/collections/using-newman-cli/command-line-integration-with-newman/) is Postman's command-line Collection Runner, perfect for CI/CD integration and automated testing.
+
+#### Installation
+
+**Install via npm (project dependency):**
+```bash
+npm install newman --save-dev
+```
+
+**Install globally:**
 ```bash
 npm install -g newman
-
-newman run Backoffice-API-Tests.postman_collection.json \
-  -e Backoffice-API.postman_environment.json \
-  --reporters cli,json,html
 ```
+
+#### Basic Usage
+
+**Run the complete test suite:**
+```bash
+npm test
+```
+
+This runs the npm script defined in package.json:
+```bash
+newman run integration-tools/Backoffice-API-Tests.postman_collection.json \
+  -e integration-tools/Backoffice-API.postman_environment.json
+```
+
+#### Available npm Scripts
+
+The project includes three Newman test scripts:
+
+**1. Standard test run:**
+```bash
+npm test
+```
+Runs all tests with standard CLI output.
+
+**2. Verbose output:**
+```bash
+npm run test:verbose
+```
+Shows detailed request/response information for debugging.
+
+**3. HTML report generation:**
+```bash
+npm run test:report
+```
+Creates a `newman-report.html` file with a visual test report.
+
+#### Advanced Newman Options
+
+**Run specific folder:**
+```bash
+newman run integration-tools/Backoffice-API-Tests.postman_collection.json \
+  -e integration-tools/Backoffice-API.postman_environment.json \
+  --folder "1. Login Tests"
+```
+
+**Override environment variables:**
+```bash
+newman run integration-tools/Backoffice-API-Tests.postman_collection.json \
+  -e integration-tools/Backoffice-API.postman_environment.json \
+  --env-var "validUsername=admin" \
+  --env-var "validPassword=admin123"
+```
+
+**Multiple reporters:**
+```bash
+newman run integration-tools/Backoffice-API-Tests.postman_collection.json \
+  -e integration-tools/Backoffice-API.postman_environment.json \
+  --reporters cli,html,json \
+  --reporter-html-export test-report.html \
+  --reporter-json-export test-results.json
+```
+
+**Delay between requests (useful for rate-limited APIs):**
+```bash
+newman run integration-tools/Backoffice-API-Tests.postman_collection.json \
+  -e integration-tools/Backoffice-API.postman_environment.json \
+  --delay-request 1000
+```
+
+**Timeout configuration:**
+```bash
+newman run integration-tools/Backoffice-API-Tests.postman_collection.json \
+  -e integration-tools/Backoffice-API.postman_environment.json \
+  --timeout-request 5000 \
+  --timeout-script 10000
+```
+
+**Disable SSL verification (not recommended for production):**
+```bash
+newman run integration-tools/Backoffice-API-Tests.postman_collection.json \
+  -e integration-tools/Backoffice-API.postman_environment.json \
+  --insecure
+```
+
+**Set global variables:**
+```bash
+newman run integration-tools/Backoffice-API-Tests.postman_collection.json \
+  -e integration-tools/Backoffice-API.postman_environment.json \
+  --global-var "apiVersion=v1"
+```
+
+#### Newman Output Interpretation
+
+**Successful run example:**
+```
+→ Backoffice API - Complete Test Suite
+  ↳ 1. Login Tests
+    ↳ 1.1 Login - Success
+      POST http://localhost:4000/login [200 OK, 245B, 45ms]
+      ✓ Status code is 200
+      ✓ Token header exists
+    ↳ 1.2 Login - Missing Username
+      POST http://localhost:4000/login [400 Bad Request, 198B, 12ms]
+      ✓ Status code is 400
+      ✓ Error message returned
+
+┌─────────────────────────┬───────────────────┬──────────────────┐
+│                         │          executed │           failed │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              iterations │                 1 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│                requests │                22 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│            test-scripts │                22 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│      prerequest-scripts │                 4 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              assertions │                66 │                0 │
+├─────────────────────────┴───────────────────┴──────────────────┤
+│ total run duration: 2.3s                                        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Exit codes:**
+- `0` - All tests passed
+- `1` - One or more tests failed
+- Useful for CI/CD pipeline decisions
+
+#### CI/CD Integration Examples
+
+**GitHub Actions:**
+```yaml
+name: API Tests
+on: [push, pull_request]
+
+jobs:
+  api-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: marketing_posts
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: |
+          cd backoffice
+          npm install
+      
+      - name: Configure database
+        run: |
+          # Run initial DDL script
+          mysql -h 127.0.0.1 -u root -proot marketing_posts < backoffice/integration-tools/MySQL_INITIAL_DDL.sql
+      
+      - name: Seed admin user
+        run: |
+          cd backoffice
+          npm run seed
+      
+      - name: Start server
+        run: |
+          cd backoffice
+          npm start &
+          sleep 5
+      
+      - name: Run API tests
+        run: |
+          cd backoffice
+          npm test
+      
+      - name: Generate HTML report
+        if: always()
+        run: |
+          cd backoffice
+          npm run test:report
+      
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: newman-report
+          path: backoffice/newman-report.html
+```
+
+**GitLab CI:**
+```yaml
+image: node:18
+
+services:
+  - mysql:8.0
+
+variables:
+  MYSQL_ROOT_PASSWORD: root
+  MYSQL_DATABASE: marketing_posts
+
+stages:
+  - test
+
+api_tests:
+  stage: test
+  before_script:
+    - cd backoffice
+    - npm install
+    - mysql -h mysql -u root -p$MYSQL_ROOT_PASSWORD $MYSQL_DATABASE < integration-tools/MySQL_INITIAL_DDL.sql
+    - npm run seed
+  script:
+    - npm start &
+    - sleep 5
+    - npm test
+  artifacts:
+    when: always
+    paths:
+      - backoffice/newman-report.html
+    reports:
+      junit: backoffice/test-results.xml
+```
+
+**Jenkins Pipeline:**
+```groovy
+pipeline {
+    agent any
+    
+    stages {
+        stage('Install Dependencies') {
+            steps {
+                sh 'cd backoffice && npm install'
+            }
+        }
+        
+        stage('Setup Database') {
+            steps {
+                sh '''
+                    mysql -u root -p$MYSQL_PASSWORD marketing_posts < backoffice/integration-tools/MySQL_INITIAL_DDL.sql
+                    cd backoffice && npm run seed
+                '''
+            }
+        }
+        
+        stage('Start Server') {
+            steps {
+                sh 'cd backoffice && npm start &'
+                sleep time: 5, unit: 'SECONDS'
+            }
+        }
+        
+        stage('Run Tests') {
+            steps {
+                sh 'cd backoffice && npm run test:report'
+            }
+        }
+    }
+    
+    post {
+        always {
+            publishHTML([
+                reportDir: 'backoffice',
+                reportFiles: 'newman-report.html',
+                reportName: 'Newman Test Report'
+            ])
+        }
+    }
+}
+```
+
+#### Troubleshooting Common Issues
+
+**Issue: Connection refused**
+```
+Error: connect ECONNREFUSED 127.0.0.1:4000
+```
+**Solution:** Ensure the server is running before executing tests.
+
+**Issue: Authentication failures**
+```
+✗ Token header exists
+```
+**Solution:** Verify environment variables `validUsername` and `validPassword` match a user in the database.
+
+**Issue: Database not found**
+```
+Error: ER_BAD_DB_ERROR: Unknown database
+```
+**Solution:** Run the MySQL DDL script and seed the admin user:
+```bash
+npm run seed
+```
+
+**Issue: Tests pass in Postman but fail in Newman**
+```
+✗ Assertion failed
+```
+**Solution:** Check that environment variables are correctly set in the environment file. Postman GUI and Newman use separate environment configurations.
+
+#### Newman HTML Reporter
+
+The HTML report generated by `npm run test:report` includes:
+- ✅ Pass/Fail summary with visual indicators
+- 📊 Request/response details for each test
+- ⏱️ Execution time per request
+- 📝 Assertion results with detailed messages
+- 🔍 Full request/response headers and bodies
+
+Open `newman-report.html` in any browser to view the detailed report.
+
+#### Newman Reporters
+
+Available reporters:
+- **cli** - Standard terminal output (default)
+- **json** - JSON format for parsing and integration
+- **html** - Visual HTML report
+- **junit** - JUnit XML format for CI tools
+- **htmlextra** - Enhanced HTML with charts (requires separate package)
+
+**Install additional reporters:**
+```bash
+npm install -g newman-reporter-htmlextra
+```
+
+**Use with Newman:**
+```bash
+newman run collection.json -e environment.json --reporters htmlextra
+```
+
+---
+
+## Quick Reference: Newman Commands
+
+### Essential Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm test` | Run all tests with standard output |
+| `npm run test:verbose` | Run tests with detailed debugging info |
+| `npm run test:report` | Run tests and generate HTML report |
+
+### Common Newman Options
+
+| Option | Example | Description |
+|--------|---------|-------------|
+| `-e, --environment` | `-e env.json` | Specify environment file |
+| `--folder` | `--folder "Login Tests"` | Run specific folder only |
+| `--env-var` | `--env-var "key=value"` | Override environment variable |
+| `--reporters` | `--reporters cli,html,json` | Specify output reporters |
+| `--reporter-html-export` | `--reporter-html-export report.html` | HTML report file path |
+| `--reporter-json-export` | `--reporter-json-export results.json` | JSON report file path |
+| `--delay-request` | `--delay-request 1000` | Delay between requests (ms) |
+| `--timeout-request` | `--timeout-request 5000` | Request timeout (ms) |
+| `--verbose` | `--verbose` | Show detailed output |
+| `--bail` | `--bail` | Stop on first test failure |
+| `--insecure` | `--insecure` | Disable SSL verification |
+
+### Quick Test Scenarios
+
+**Test only login functionality:**
+```bash
+newman run integration-tools/Backoffice-API-Tests.postman_collection.json \
+  -e integration-tools/Backoffice-API.postman_environment.json \
+  --folder "1. Login Tests"
+```
+
+**Test with custom credentials:**
+```bash
+newman run integration-tools/Backoffice-API-Tests.postman_collection.json \
+  -e integration-tools/Backoffice-API.postman_environment.json \
+  --env-var "validUsername=testuser" \
+  --env-var "validPassword=testpass"
+```
+
+**Debug failing tests:**
+```bash
+npm run test:verbose
+```
+
+**Generate report for stakeholders:**
+```bash
+npm run test:report
+# Open newman-report.html in browser
+```
+
+---
+
+
 
 ## Support
 

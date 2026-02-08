@@ -51,39 +51,99 @@ npm install
 4. Set up environment variables:
    - For sensitive data, use environment variables or create `config/custom-environment-variables.json`
 
+5. Initialize the database:
+   - Run the DDL script in `integration-tools/MySQL_INITIAL_DDL.sql` to create the required tables
+
+6. Create the initial admin user:
+```bash
+npm run seed
+```
+   This will create an admin user with:
+   - Username: `admin`
+   - Password: `admin123` (change in `seed-admin.js` before running)
+   - Email: `admin@example.com`
+   - Admin privileges: Yes
+
 ## Usage
 
-Start the server:
+### Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm start` | Start the production server |
+| `npm run dev` | Start server with auto-reload (nodemon) |
+| `npm run seed` | Create initial admin user in database |
+| `npm test` | Run API tests with Newman (CLI output) |
+| `npm run test:verbose` | Run tests with detailed debugging information |
+| `npm run test:report` | Run tests and generate HTML report |
+
+### Start the Server
+
+**Production mode:**
 ```bash
 npm start
 ```
 
-For development with auto-reload:
+**Development mode with auto-reload:**
 ```bash
 npm run dev
 ```
 
+**Seed initial admin user:**
+```bash
+npm run seed
+```
+
 The server will start on `http://localhost:4000`
+
+### Run API Tests
+
+**Quick test:**
+```bash
+npm test
+```
+
+**With detailed output:**
+```bash
+npm run test:verbose
+```
+
+**Generate visual HTML report:**
+```bash
+npm run test:report
+# Opens newman-report.html
+```
+
+> **💡 Note:** Make sure the server is running before executing tests.
 
 ## 📚 Documentation Index
 
 This repository contains multiple documentation files for different purposes:
 
 - **[Readme.md](Readme.md)** (this file) - Main project documentation with API testing guide
-- **[Postman Collection Guide](postman/POSTMAN-GUIDE.md)** - Complete guide for Postman collection setup and usage
-- **[Postman Collection](postman/Backoffice-API-Tests.postman_collection.json)** - Ready-to-import collection with 22 tests
-- **[Postman Environment](postman/Backoffice-API.postman_environment.json)** - Environment variables configuration
+- **[Postman Collection Guide](integration-tools/POSTMAN-GUIDE.md)** - Complete guide for Postman and Newman testing
+- **[Postman Collection](integration-tools/Backoffice-API-Tests.postman_collection.json)** - Ready-to-import collection with 22 tests
+- **[Postman Environment](integration-tools/Backoffice-API.postman_environment.json)** - Environment variables configuration
 
 ---
 
-## Quick Start: Testing with Postman
+## Quick Start: Testing with Postman & Newman
 
-**🎯 Want to test the API immediately?**
+**🎯 Want to test the API?**
 
-Import the ready-to-use Postman collection from the `postman/` directory:
+**Option 1: Postman GUI (Interactive testing)**
+Import the ready-to-use Postman collection from the `integration-tools/` directory:
 - Complete test suite with all 22 automated tests
 - Environment variables pre-configured
-- See [Postman Collection Guide](postman/POSTMAN-GUIDE.md) for detailed setup instructions
+- See [Postman Collection Guide](integration-tools/POSTMAN-GUIDE.md) for detailed setup instructions
+
+**Option 2: Newman CLI (Automated testing)**
+Run tests from the command line:
+```bash
+npm test                # Run all tests
+npm run test:verbose    # Detailed output
+npm run test:report     # Generate HTML report
+```
 
 ---
 
@@ -193,9 +253,139 @@ DEBUG=backoffice:models:*
 
 ### Prerequisites for Testing
 - Server running on `http://localhost:4000`
-- Tools: curl, Postman, Thunder Client, or any HTTP client
+- Tools: curl, Postman, Thunder Client, Newman, or any HTTP client
 - Valid JWT token (obtained from login)
 - MySQL database with `users` table containing at least one user
+
+### Automated Testing with Newman
+
+[Newman](https://learning.postman.com/docs/collections/using-newman-cli/command-line-integration-with-newman/) is the command-line Collection Runner for Postman. It allows you to run and test Postman collections directly from the command line.
+
+#### Installation
+
+Install Newman as a development dependency:
+```bash
+npm install
+```
+
+Or install globally:
+```bash
+npm install -g newman
+```
+
+#### Running Tests with Newman
+
+**Basic test run:**
+```bash
+npm test
+```
+
+**Verbose output with detailed information:**
+```bash
+npm run test:verbose
+```
+
+**Generate HTML report:**
+```bash
+npm run test:report
+```
+This creates a `newman-report.html` file in the project root.
+
+#### Manual Newman Commands
+
+**Run collection with environment:**
+```bash
+newman run integration-tools/Backoffice-API-Tests.postman_collection.json \
+  -e integration-tools/Backoffice-API.postman_environment.json
+```
+
+**Run with custom environment variables:**
+```bash
+newman run integration-tools/Backoffice-API-Tests.postman_collection.json \
+  -e integration-tools/Backoffice-API.postman_environment.json \
+  --env-var "validUsername=admin" \
+  --env-var "validPassword=admin123"
+```
+
+**Run specific folder (e.g., only login tests):**
+```bash
+newman run integration-tools/Backoffice-API-Tests.postman_collection.json \
+  -e integration-tools/Backoffice-API.postman_environment.json \
+  --folder "1. Login Tests"
+```
+
+**Multiple reporters (CLI + HTML + JSON):**
+```bash
+newman run integration-tools/Backoffice-API-Tests.postman_collection.json \
+  -e integration-tools/Backoffice-API.postman_environment.json \
+  --reporters cli,html,json \
+  --reporter-html-export report.html \
+  --reporter-json-export report.json
+```
+
+#### Newman CI/CD Integration
+
+Newman is perfect for integrating API tests into your CI/CD pipeline:
+
+**GitHub Actions Example:**
+```yaml
+name: API Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm install
+      - run: npm run seed
+      - run: npm start &
+      - run: npm test
+```
+
+**GitLab CI Example:**
+```yaml
+test_api:
+  script:
+    - npm install
+    - npm run seed
+    - npm start &
+    - sleep 5
+    - npm test
+```
+
+#### Expected Output
+
+Successful test run should show:
+```
+→ Backoffice API - Complete Test Suite
+  ↳ 1. Login Tests
+    ↳ 1.1 Login - Success
+      POST http://localhost:4000/login [200 OK, 245B, 45ms]
+      ✓ Status code is 200
+      ✓ Token header exists
+  ...
+
+┌─────────────────────────┬────────────┬────────────┐
+│                         │   executed │     failed │
+├─────────────────────────┼────────────┼────────────┤
+│              iterations │          1 │          0 │
+├─────────────────────────┼────────────┼────────────┤
+│                requests │         22 │          0 │
+├─────────────────────────┼────────────┼────────────┤
+│            test-scripts │         22 │          0 │
+├─────────────────────────┼────────────┼────────────┤
+│      prerequest-scripts │          4 │          0 │
+├─────────────────────────┼────────────┼────────────┤
+│              assertions │         66 │          0 │
+├─────────────────────────┴────────────┴────────────┤
+│ total run duration: 2.3s                          │
+└───────────────────────────────────────────────────┘
+```
+
+> **💡 Tip:** Make sure to run `npm run seed` before running tests to ensure you have an admin user in the database.
+
+---
 
 ---
 
