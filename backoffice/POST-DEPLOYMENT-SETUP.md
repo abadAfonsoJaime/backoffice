@@ -404,7 +404,8 @@ Use this checklist for each new deployment:
 
 - **[Environment Variables Guide](ENVIRONMENT-VARIABLES.md)** - Comprehensive variable documentation
 - **[Seeding Guide](SEEDING-GUIDE.md)** - Database seeding options and behavior
-- **[Config README](config/README.md)** - Configuration file hierarchy
+- **[Configuration Guide](config/CONFIGURATION-GUIDE.md)** - Configuration file hierarchy
+- **[Backend API Guide](BACKEND-API-GUIDE.md)** - Complete API documentation
 - **[Main README](../Readme.md)** - Full application documentation
 - **[CI/CD Setup](../GITHUB-CICD-SETUP.md)** - Automated deployment guide
 

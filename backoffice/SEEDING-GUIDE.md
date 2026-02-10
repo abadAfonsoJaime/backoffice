@@ -59,3 +59,10 @@ After running seed scripts:
 2. ✅ Check cards appear in API response: `GET http://localhost:4000/cards`
 3. ⚠️ Change default admin password in production
 4. ✅ Customize or delete default cards as needed
+
+## Related Documentation
+
+- **[Environment Variables Guide](ENVIRONMENT-VARIABLES.md)** - Configure database connection
+- **[Post-Deployment Setup](POST-DEPLOYMENT-SETUP.md)** - Complete deployment process
+- **[Backend API Guide](BACKEND-API-GUIDE.md)** - API endpoints and usage
+- **[Main README](../Readme.md)** - Project overview

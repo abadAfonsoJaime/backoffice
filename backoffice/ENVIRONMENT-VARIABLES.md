@@ -255,6 +255,14 @@ The `config` package loads configuration in this order (later sources override e
 
 ## Additional Resources
 
+### Internal Documentation
+- **[Configuration Guide](config/CONFIGURATION-GUIDE.md)** - Config files hierarchy and loading order
+- **[Seeding Guide](SEEDING-GUIDE.md)** - Database initialization and seeding
+- **[Post-Deployment Setup](POST-DEPLOYMENT-SETUP.md)** - Complete deployment checklist
+- **[Backend API Guide](BACKEND-API-GUIDE.md)** - API endpoints and usage
+- **[Main README](../Readme.md)** - Project overview
+
+### External Resources
 - [Config Package Documentation](https://github.com/node-config/node-config)
 - [MySQL Secure Deployment Guide](https://dev.mysql.com/doc/refman/8.0/en/security-guidelines.html)
 - [JWT Best Practices](https://tools.ietf.org/html/rfc8725)

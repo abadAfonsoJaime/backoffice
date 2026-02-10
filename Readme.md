@@ -2,6 +2,8 @@
 
 A complete full-stack backoffice solution with Node.js REST API backend and React SPA frontend, featuring MySQL database integration, JWT authentication, and automated CI/CD deployment.
 
+> 📚 **Documentation Note**: All project documentation is organized and accessible. See **[DOCUMENTATION-MAP.md](./DOCUMENTATION-MAP.md)** for complete navigation or **[DOCUMENTATION-ORGANIZATION.md](./DOCUMENTATION-ORGANIZATION.md)** for structure details.
+
 ## 📑 Table of Contents
 
 - [Architecture](#-architecture)
@@ -16,6 +18,7 @@ A complete full-stack backoffice solution with Node.js REST API backend and Reac
 - [Security](#-security-considerations)
 - [CI/CD & Deployment](#-cicd--deployment)
 - [Environment Variables](#environment-variables)
+- [Documentation](#-documentation-index)
 - [Quick Reference](#-quick-reference)
 
 ## 🏗️ Architecture
@@ -307,111 +310,6 @@ npm run build
 ```bash
 npm test
 ```
-
-## 🧪 Testing the Full Stack
-
-### 1. Backend API Testing
-
-**Using Postman:**
-- Import `backoffice/integration-tools/Backoffice-API-Tests.postman_collection.json`
-- Import `backoffice/integration-tools/Backoffice-API.postman_environment.json`
-- See `backoffice/integration-tools/POSTMAN-GUIDE.md` for details
-
-**Using Newman (Command Line):**
-```bash
-cd backoffice
-npm test
-```
-
-### 2. Frontend Testing
-
-**Manual Testing Checklist:**
-1. Open http://localhost:3000
-2. Login with credentials
-3. Navigate to Cards page
-4. Create/edit/delete cards
-5. Test logout functionality
-6. Test protected routes (without authentication)
-
-**Key Test Scenarios:**
-- ✅ Login with valid credentials
-- ✅ Login with invalid credentials (should show error)
-- ✅ Access protected routes without login (should redirect)
-- ✅ Create new card (admin only)
-- ✅ Edit existing card
-- ✅ Logout and verify session cleared
-- ✅ API calls to backend succeed
-- ✅ Toast notifications appear
-
-### 3. Integration Testing
-
-Test the full flow:
-```
-User Login → JWT Token → API Request → MySQL Query → Response → UI Update
-```
-
-## Usage by Component
-
-### Backend API Usage
-
-Start the server:
-```bash
-cd backoffice
-npm start
-```
-
-For development with auto-reload:
-```bash
-npm run dev
-```
-
-The server will start on `http://localhost:4000`
-
-### Frontend Usage
-
-Start the React app:
-```bash
-cd FrontAdminTable
-npm start
-```
-
-The app will automatically open at `http://localhost:3000`
-
-## API Endpoints
-
-### Authentication Endpoints
-- `POST /login` - User login (returns JWT token)
-  - Body: `{ "username": "admin", "password": "admin123" }`
-  - Returns: JWT token in `x-auth-token` header
-
-### User Management Endpoints
-- `GET /users/me` - Get current user info
-  - Requires: JWT token in `x-auth-token` header
-  - Returns: User object (without password)
-
-- `POST /users/new` - Create new user
-  - Requires: JWT token + Admin role
-  - Body: `{ "username": "...", "email": "...", "password": "...", "isAdmin": false }`
-
-### Cards/Posts Endpoints
-- `GET /cards` - Get all cards
-  - Requires: JWT token
-  - Returns: Array of card objects
-
-- `GET /cards/:id` - Get specific card
-  - Requires: JWT token
-  - Returns: Single card object
-
-- `POST /cards` - Create new card
-  - Requires: JWT token + Admin role
-  - Body: Card data
-
-- `PUT /cards/:id` - Update card
-  - Requires: JWT token + Admin role
-  - Body: Updated card data
-
-- `DELETE /cards/:id` - Delete card
-  - Requires: JWT token + Admin role
 
 ## Frontend Routes
 
@@ -1556,14 +1454,61 @@ npm run seed
 # 3. Verify database has users
 ```
 
-### Project Documentation
+## 📚 Documentation Index
 
-- **Main README**: `./Readme.md` (this file)
-- **Backend Docs**: `./backoffice/Readme.md`
-- **API Testing**: `./backoffice/integration-tools/POSTMAN-GUIDE.md`
-- **CI/CD Setup**: `./GITHUB-CICD-SETUP.md`
-- **Deployment**: `./DEPLOYMENT-CONNECTION-GUIDE.md`
-- **Frontend Migration**: `./FrontAdminTable/MIGRATION-GUIDE.md`
+**📖 [Complete Documentation Map](./DOCUMENTATION-MAP.md)** - Comprehensive guide to all documentation with quick navigation
+
+All project documentation is organized below for easy access.
+
+### Getting Started
+
+- **[Main README](./Readme.md)** (this file) - Complete full-stack application guide
+- **[Quick Start Guide](#-quick-start---full-stack-setup)** - Get up and running in minutes
+- **[Testing Guide](./TESTING-GUIDE.md)** - Comprehensive testing documentation
+
+### Backend Documentation
+
+- **[Backend API Guide](./backoffice/BACKEND-API-GUIDE.md)** - Complete Node.js/Express API documentation
+- **[Environment Variables](./backoffice/ENVIRONMENT-VARIABLES.md)** - Configuration and environment setup
+- **[Seeding Guide](./backoffice/SEEDING-GUIDE.md)** - Database seeding options and usage
+- **[Post-Deployment Setup](./backoffice/POST-DEPLOYMENT-SETUP.md)** - Step-by-step deployment checklist
+- **[Configuration Guide](./backoffice/config/CONFIGURATION-GUIDE.md)** - Config files hierarchy and usage
+- **[Postman Testing Guide](./backoffice/integration-tools/POSTMAN-GUIDE.md)** - API testing with Postman
+
+### Frontend Documentation
+
+- **[Migration Guide](./FrontAdminTable/MIGRATION-GUIDE.md)** - React 17 to 18 migration details
+- **[Migration Comparison](./FrontAdminTable/MIGRATION-COMPARISON.md)** - Strategy comparison
+- **[Migration Cheatsheet](./FrontAdminTable/MIGRATION-CHEATSHEET.md)** - Quick reference for migration
+- **[Implementation Summary](./FrontAdminTable/IMPLEMENTATION-SUMMARY.md)** - Changes summary
+
+### CI/CD & Deployment
+
+- **[GitHub CI/CD Setup](./GITHUB-CICD-SETUP.md)** - Comprehensive GitHub Actions configuration
+- **[CI/CD Checklist](./CICD-CHECKLIST.md)** - Step-by-step deployment setup checklist
+- **[Branch Setup Guide](./BRANCH-SETUP-GUIDE.md)** - Branch protection and workflow
+- **[Deployment Connection Guide](./DEPLOYMENT-CONNECTION-GUIDE.md)** - Server connection setup
+
+### Quick Access by Topic
+
+#### Configuration & Setup
+- [Environment Variables](./backoffice/ENVIRONMENT-VARIABLES.md)
+- [Configuration Guide](./backoffice/config/CONFIGURATION-GUIDE.md)
+- [Database Seeding](./backoffice/SEEDING-GUIDE.md)
+
+#### Development
+- [Backend API Guide](./backoffice/BACKEND-API-GUIDE.md)
+- [Testing Guide](./TESTING-GUIDE.md)
+- [Development Workflow](#-development-workflow)
+
+#### Deployment
+- [Post-Deployment Setup](./backoffice/POST-DEPLOYMENT-SETUP.md)
+- [CI/CD Setup](./GITHUB-CICD-SETUP.md)
+- [Deployment Connection Guide](./DEPLOYMENT-CONNECTION-GUIDE.md)
+
+#### Frontend
+- [Migration Guide](./FrontAdminTable/MIGRATION-GUIDE.md)
+- [React 18 Changes](./FrontAdminTable/MIGRATION-COMPARISON.md)
 
 ### Tech Stack Summary
 
