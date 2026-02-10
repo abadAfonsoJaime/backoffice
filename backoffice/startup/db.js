@@ -7,7 +7,8 @@ const connection = mysql.createConnection({
     host: dbData.host,
     user: dbData.user,
     password: dbData.password,
-    database: dbData.database
+    database: dbData.database,
+    port: dbData.port || 3306
 });
 
 // Function to test database connection

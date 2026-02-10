@@ -47,7 +47,7 @@ GitHub Actions needs a way to execute commands on your Windows servers. There ar
 │   (Cloud)    │       │ Server          │
 │              │       │                 │
 │  Workflows   │       │  [Runner App]   │
-│   trigger →  │ ───▶  │   ↓ polls       │
+│   trigger →  │ ───▶ │   ↓ polls       │
 │              │       │   ↓ executes    │
 │              │       │   ↓ reports     │
 └──────────────┘       └─────────────────┘

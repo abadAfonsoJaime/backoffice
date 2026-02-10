@@ -1,0 +1,301 @@
+@import url("https://fonts.googleapis.com/css?family=Raleway&display=swap");
+
+body {
+  margin: 0;
+  /* font-size: 1em; */
+  font-family: "Raleway", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+    "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+/* Extra small devices (portrait phones, less than 576px)*/
+@media (max-width: 575.98px) {
+  body {
+    font-size: 140%;
+  }
+}
+/* Small devices (landscape phones, less than 768px) */
+@media (max-width: 767.98px) {
+  body {
+    font-size: 120%;
+  }
+}
+/* Medium devices (tablets, less than 992px) */
+@media (max-width: 991.98px) {
+  body {
+    font-size: 110%;
+  }
+}
+
+/* NAVBAR */
+.no-gutters {
+  background-color: #4f87ce;
+}
+h4 {
+  padding-top: 5px;
+  font-weight: bold;
+  color: #fff;
+}
+.tab:hover {
+  border: 1px solid #4f87ce;
+  background-color: #fff;
+  border-radius: 10px;
+  padding-top: 8px;
+}
+
+.tab:hover h4 {
+  color: #4f87ce;
+}
+/* customButton */
+
+.submitButton span {
+  font-weight: bold;
+}
+
+.submitButton {
+  min-width: 150px;
+}
+
+.submitButton:first-child {
+  background-color: #4f87ce;
+  color: #fff;
+  border: 2px solid #fff;
+  border-radius: 10px;
+  margin-top: 1em;
+  font-size: 1em;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 0.25em;
+}
+
+.submitButton:first-child:hover {
+  color: #4f87ce;
+  background-color: #fff;
+  border: 2px solid #4f87ce;
+}
+
+/* FORM CSS */
+.wrapper {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  background-color: #61c8ec;
+}
+
+.form-wrapper {
+  width: 600px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 40px;
+  border-radius: 10px;
+  box-shadow: 0px 10px 50px #555;
+  background-color: #ffffff;
+}
+
+/* form {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+} */
+
+h1 {
+  text-align: center;
+  width: 100%;
+  color: #111;
+  font-weight: lighter;
+}
+
+/* label {
+  font-size: 0.8em;
+  margin-bottom: 0.25em;
+  color: #222;
+  font-weight: lighter;
+} */
+
+/* input {
+  padding: 10px 10px;
+  border-radius: 5px;
+  outline: none;
+  border: 1px solid #cfcfcf;
+} */
+
+input::placeholder {
+  /*font-size: 1.2em;*/
+  font-weight: lighter;
+  color: #999;
+}
+
+input.error {
+  border: 1px solid red;
+}
+
+.errorMessage {
+  color: red;
+  font-size: 0.75em;
+  display: relative;
+}
+
+/* PHONE SIMULATOR CSS */
+
+.image {
+  border-radius: 6px;
+  border: 0;
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+}
+
+.image > div {
+  border-radius: 6px;
+  display: block;
+}
+
+.image.phone {
+  box-shadow: none;
+  border-radius: 0;
+  margin: 0 0 3em 0;
+  width: 20em;
+}
+
+.image.phone img {
+  border-radius: 0;
+  display: block;
+  position: relative;
+  width: 100%;
+}
+
+.image.phone .inner,
+.image.phone:before,
+.image.phone:after {
+  display: block;
+  border: solid 2px rgba(255, 255, 255, 0.25);
+}
+
+.image.phone .inner {
+  position: relative;
+}
+
+.image.phone .inner:before,
+.image.phone .inner:after {
+  content: "";
+  position: absolute;
+  left: 50%;
+}
+
+.image.phone .inner:before {
+  top: -1.375em;
+  margin-left: -1em;
+  width: 2em;
+  height: 0.25em;
+  border-radius: 0.5em;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.image.phone .inner:after {
+  bottom: -2.75em;
+  margin-left: -1em;
+  width: 2em;
+  height: 2em;
+  border-radius: 100%;
+  border: solid 2px rgba(255, 255, 255, 0.25);
+}
+
+.image.phone:before,
+.image.phone:after {
+  content: "";
+}
+
+.image.phone:before {
+  height: 2.5em;
+  border-radius: 1em 1em 0 0;
+  border-bottom: 0;
+  background-color: #fff;
+}
+
+.image.phone:after {
+  height: 3.5em;
+  border-radius: 0 0 1em 1em;
+  border-top: 0;
+  background-color: #fff;
+}
+
+.image {
+  box-shadow: 0 0 0 4px #ffffff, 0 0 0 5px #e6e6e6;
+}
+
+.image.phone {
+  box-shadow: none;
+}
+
+.image.phone .inner,
+.image.phone:before,
+.image.phone:after {
+  border-color: grey;
+}
+
+.image.phone .inner:before {
+  background: grey;
+}
+
+.image.phone .inner:after {
+  border-color: grey;
+}
+
+.altura {
+  padding-bottom: 15em;
+}
+
+.card {
+  padding: 9px 0;
+  margin: 10px 4px 60px 4px;
+  border-style: solid;
+  border-color: black;
+  border-width: 1px;
+  border-radius: 5px;
+}
+
+.cardContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.title {
+  padding-left: 6px;
+  font-size: 20px;
+}
+
+.subtitle {
+  padding: 0px 8px;
+  font-size: 16px;
+}
+
+.buttonContainer {
+  margin-left: 6px;
+}
+
+.customButton {
+  border-style: solid;
+  border-color: #61c8ec;
+  border-width: 3px;
+  border-radius: 24px;
+  height: 48px;
+  padding: 0px 20px;
+}
+
+.buttonText {
+  margin: 8px 0px;
+  font-size: 16px;
+  color: #4f87ce;
+}

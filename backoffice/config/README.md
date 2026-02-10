@@ -74,6 +74,8 @@ export DB_NAME=marketing_posts
 export JWT_PRIVATE_KEY=your_jwt_key
 ```
 
+See [ENVIRONMENT-VARIABLES.md](../ENVIRONMENT-VARIABLES.md) for comprehensive environment configuration guide.
+
 ## Configuration Priority
 
 When the application starts, config files are loaded in this order (later files override earlier ones):
